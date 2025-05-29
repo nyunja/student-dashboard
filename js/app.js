@@ -53,39 +53,40 @@ function renderLoginForm() {
         </svg>
     </button>
   `;
+  const loginForm = document.querySelector("form");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const identifier = document.getElementById("identifier").value;
+      const password = document.getElementById("password").value;
+
+      const result = await login(identifier, password);
+
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+
+      const { data, error } = await graphqlRequest(
+        `{ user { id login attrs } }`
+      );
+
+      if (error) {
+        alert("Login succeeded but Graphql failed. Please try again.");
+        console.error("GraphQL request failed after login:", error);
+        logout();
+        return;
+      }
+
+      showDashboard(data.user[0].login, data.user[0].id, data.user[0].attrs);
+    });
+  }
 }
 
-const loginForm = document.querySelector("form");
-
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const identifier = document.getElementById("identifier").value;
-    const password = document.getElementById("password").value;
-
-    const result = await login(identifier, password);
-
-    if (result.error) {
-      alert(result.error);
-      return;
-    }
-
-    const {data, error} = await graphqlRequest(`{ user { id login attrs } }`);
-
-    if (error) {
-      alert("Login succeeded but Graphql failed. Please try again.");
-      console.error("GraphQL request failed after login:", error);
-      logout();
-      return;
-    }
-
-    showDashboard(data.user[0].login, data.user[0].id, data.user[0].attrs);
-  })
-}
-
-  function renderDashboardLayout() {
-    mainApp.innerHTML = `
+function renderDashboardLayout() {
+  mainApp.innerHTML = `
       <main class="dashboard-container">
         <section class="sidebar">
           <div class="dash-logo">
@@ -101,13 +102,23 @@ if (loginForm) {
         </section>
         <section class="main-content">
           <header>
-            <div class="top-bar">
-              <div class="search-bar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <div class="search-bar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" placeholder="Search...">
+            </div>
+            <div class="user-profile">
+              <div class="notification">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <input type="text" placeholder="Search...">
+                <span class="badge">0</span>
+              </div>
+              <div class="user-info">
+                <span id="user-name">Loading...</span>
               </div>
             </div>
           </header>
@@ -122,22 +133,22 @@ if (loginForm) {
     
     `;
 
-    const logoutBtn = document.getElementById("logoutBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        logout();
-        renderLoginForm();
-      })
-    }
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      logout();
+      renderLoginForm();
+    });
   }
+}
 
-  function showDashboard(loginName, userId, userAttrs) {
-    renderDashboardLayout();
+function showDashboard(loginName, userId, userAttrs) {
+  console.log("Showing dashboard for user:", loginName);
+  renderDashboardLayout();
 
-    document.getElementById("user-name").textContent = loginName;
-  }
-  
+  document.getElementById("user-name").textContent = loginName;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const authContainer = document.querySelector(".auth-container");
@@ -146,32 +157,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (isAuthenticated()) {
     const { data, error } = await graphqlRequest("{ user { login } }");
     if (data && data.user && data.user.length > 0) {
+      console.log("Authenticated user data:", data.user);
       showDashboard(data.user[0].login, data.user[0].id, data.user[0].attrs);
     } else {
-      console.error("Graphql failed to fetch use data on authenticated load: ", error);
+      console.error(
+        "Graphql failed to fetch use data on authenticated load: ",
+        error
+      );
       logout();
       renderLoginForm();
     }
   } else {
+    console.log("User is not authenticated");
     renderLoginForm();
   }
 
   // Theme Toggle Functionality
   const themeToggle = document.querySelector(".theme-toggle");
   const moonIcon = document.querySelector(".moon-icon");
-  
+
   // Check if user has a preference stored
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark-mode");
     updateThemeIcon(true);
   }
-  
+
   themeToggle.addEventListener("click", () => {
     const isDarkMode = document.body.classList.toggle("dark-mode");
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     updateThemeIcon(isDarkMode);
   });
-  
+
   function updateThemeIcon(isDarkMode) {
     if (isDarkMode) {
       moonIcon.innerHTML = `
