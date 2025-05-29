@@ -10,9 +10,9 @@ function renderLoginForm() {
         <section class="login-container">
             <div class="login-form">
                 <div class="logo-container">
-                    <div class="logo">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle">
-                            <title id="logoTitle">GraphQL Progress Tracker Logo</title>
+                    <div class="login-logo">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="login-logoTitle">
+                            <title id="login-logoTitle">GraphQL Progress Tracker Logo</title>
                             <path
                                 d="M20 5C11.716 5 5 11.716 5 20C5 28.284 11.716 35 20 35C28.284 35 35 28.284 35 20C35 11.716 28.284 5 20 5Z"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -88,13 +88,16 @@ if (loginForm) {
     mainApp.innerHTML = `
       <main class="dashboard-container">
         <section class="sidebar">
-          <div class="logo">
+          <div class="dash-logo">
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M20 5C11.716 5 5 11.716 5 20C5 28.284 11.716 35 20 35C28.284 35 35 28.284 35 20C35 11.716 28.284 5 20 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               <path d="M15 15H15.01M25 15H25.01M15 25H25" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             <span>Student Profile</span>
           </div>
+          <div class="sidebar-title">Dashboard</div>
+          <nav>
+          </nav>
         </section>
         <section class="main-content">
           <div class="top-bar">
