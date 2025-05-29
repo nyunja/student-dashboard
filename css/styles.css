@@ -221,3 +221,25 @@ body {
     display: block;
   }
 }
+
+/* Dash board */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background: linear-gradient(
+    to right,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: var(--sidebar-text);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;;
+  height: 100vh;
+  overflow-y: auto;;
+}

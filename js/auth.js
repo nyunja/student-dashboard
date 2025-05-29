@@ -90,7 +90,7 @@ export function isAuthenticated() {
         console.error("JWT payload missing after split.");
         return false;
     }
-    const payload = JSON.parse(base64UrlDecode(encodedPayload)); // Use the helper
+    const payload = JSON.parse(base64URLDecode(encodedPayload)); // Use the helper
     const now = Math.floor(Date.now() / 1000);
     return payload.exp && payload.exp > now;
   } catch (e) {
