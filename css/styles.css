@@ -269,3 +269,36 @@ body {
   margin-left: 250px;
   padding: 20px;
 }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--solid-border);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 8px 15px;
+  width: 300px;
+  border: 1px solid var(--border-color);
+}
+
+.search-bar svg {
+  color: var(--text-light);
+  margin-right: 10px;
+}
+
+.search-bar input {
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text-color);
+  font-size: 14px;
+  width: 100%;
+}
