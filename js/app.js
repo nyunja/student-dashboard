@@ -119,7 +119,7 @@ function renderDashboardLayout() {
               </div>
               <div class="user-info">
                 <span id="user-name">Loading...</span>
-                <img alt="User avatar" class="avatar">
+                <img src="./assets/avatar_placeholder.png" alt="User avatar" class="avatar">
               </div>
             </div>
           </header>
