@@ -1,6 +1,13 @@
 import { logout } from "./auth.js";
+import StatsCard from "./components/StatsCard.js"
 
 export const mainApp = document.querySelector(".main-app-container");
+
+let totalXPCard;
+let completedExercisesCard;
+let averageGradeCard;
+
+console.log(new StatsCard())
 
 export function renderDashboardLayout() {
   mainApp.innerHTML = `
@@ -71,6 +78,7 @@ export function renderDashboardLayout() {
               </div>
             </div>
           </header>
+          <div class="stats-row" id="stats-row-container"></div>
         </section>
       </main>
       <!-- Theme Toggle Button -->
@@ -90,6 +98,19 @@ export function renderDashboardLayout() {
       renderLoginForm();
     });
   }
+
+  // Create and instance of a stats card with stats
+  const statsContainer = document.getElementById('stats-row-container');
+  if (statsContainer) {
+    totalXPCard = new StatsCard("Total XP", "0", "total-xp-display");
+    completedExercisesCard = new StatsCard("Completed Exercises", "0", "completed-exercises-display");
+    averageGradeCard = new StatsCard("Average Grade", "0%", "average-grade-display");
+
+    statsContainer.appendChild(totalXPCard.render());
+    statsContainer.appendChild(completedExercisesCard.render());
+    statsContainer.appendChild(averageGradeCard.render());
+  }
+
 }
 
 export function showDashboard(loginName, userId, userAttrs) {

@@ -1,6 +1,6 @@
 import { login, logout, isAuthenticated } from "./auth.js";
 import { graphqlRequest } from "./graphql.js";
-import { renderDashboardLayout, showDashboard } from "./dashboard.js";
+import { showDashboard } from "./dashboard.js";
 
 const mainApp = document.querySelector(".main-app-container");
 
