@@ -1,13 +1,15 @@
 import { logout } from "./auth.js";
 import StatsCard from "./components/StatsCard.js"
+import { themeManager } from "./components/ThemeManager.js";
+import { GraphQLService } from "./services/graphqlService.js";
 
 export const mainApp = document.querySelector(".main-app-container");
+
+const GraphQL = new GraphQLService();
 
 let totalXPCard;
 let completedExercisesCard;
 let averageGradeCard;
-
-console.log(new StatsCard())
 
 export function renderDashboardLayout() {
   mainApp.innerHTML = `
@@ -52,6 +54,14 @@ export function renderDashboardLayout() {
                     <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 Progress
+            </a>
+            <a href="#" id="logoutBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="17 16 22 12 17 8"></polyline>
+                <line x1="22" y1="12" x2="10" y2="12"></line>
+              </svg>
+              Logout
             </a>
           </nav>
         </section>
@@ -111,11 +121,26 @@ export function renderDashboardLayout() {
     statsContainer.appendChild(averageGradeCard.render());
   }
 
+  themeManager.setupThemeToggle();
 }
 
-export function showDashboard(loginName, userId, userAttrs) {
+export async function showDashboard(loginName, userId, userAttrs) {
   console.log("Showing dashboard for user:", loginName);
   renderDashboardLayout();
 
   document.getElementById("user-name").textContent = loginName;
+  await fetchAndPoplulateDashboard(loginName, userId);
+}
+
+async function fetchAndPoplulateDashboard(loginName, userId) {
+  console.log(`Fetching dashboard data for ${loginName} (ID: ${userId})...`);
+  try {
+    const xpData = await GraphQL.getUserXP();
+
+    const totalXPValue = xpData.transaction.filter(t => t.type === "xp").reduce((sum, t) => sum + t.amount, 0);
+    totalXPCard.updateStat(totalXPValue.toLocaleString() + " XP");
+  } catch (error){
+    console.error("Error fetching or populating dashboard data:", error);
+    alert("Failed to load dashboard data. Please check your network or try again.");
+  }
 }
