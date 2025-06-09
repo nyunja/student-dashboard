@@ -1,16 +1,17 @@
 export class GraphQLService {
     constructor() {
         this.endpoint = "https://learn.zone01kisumu.ke/api/graphql-engine/v1/graphql"
-        this.token = localStorage.getItem('jwt') || null;
+        // this.token = localStorage.getItem('jwt') || null;
     }
 
     async query(queryStr, variables = {}) {
+        const token = localStorage.getItem('jwt');
         try {
             const response = await fetch(this.endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.token}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     query: queryStr,
