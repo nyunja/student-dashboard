@@ -124,16 +124,16 @@ export function renderDashboardLayout() {
   themeManager.setupThemeToggle();
 }
 
-export async function showDashboard(loginName, userId, userAttrs) {
-  console.log("Showing dashboard for user:", loginName);
+export async function showDashboard(userInfo) {
+  console.log("Showing dashboard for user:", userInfo.login);
   renderDashboardLayout();
 
-  document.getElementById("user-name").textContent = loginName;
-  await fetchAndPoplulateDashboard(loginName, userId);
+  document.getElementById("user-name").textContent = userInfo.login;
+  await fetchAndPoplulateDashboard(userInfo);
 }
 
-async function fetchAndPoplulateDashboard(loginName, userId) {
-  console.log(`Fetching dashboard data for ${loginName} (ID: ${userId})...`);
+async function fetchAndPoplulateDashboard(userInfo) {
+  console.log(`Fetching dashboard data for ${ userInfo.login} (ID: ${ userInfo.id})...`);
   try {
     const xpData = await GraphQL.getUserXP();
 
