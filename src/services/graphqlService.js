@@ -63,7 +63,7 @@ export class GraphQLService {
     async getUserXP() {
         const query = `
             {
-                transactions( where: { _and: [{ type: { _eq: "xp" } }, { eventId: { _eq: 75 } }]}) {
+                transaction( where: { _and: [{ type: { _eq: "xp" } }, { eventId: { _eq: 75 } }]}) {
                     path amount type createdAt
                 }
             }
