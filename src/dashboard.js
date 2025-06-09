@@ -127,22 +127,33 @@ export function renderDashboardLayout() {
 }
 
 export async function showDashboard(userInfo) {
-  console.log("Showing dashboard for user:", userInfo.login);
+  console.log("Showing dashboard for user:", userInfo.user[0].login);
   renderDashboardLayout();
 
-  document.getElementById("user-name").textContent = userInfo.login;
+  document.getElementById("user-name").textContent = userInfo.user[0].login;
   await fetchAndPoplulateDashboard(userInfo);
 }
 
 async function fetchAndPoplulateDashboard(userInfo) {
-  console.log(`Fetching dashboard data for ${ userInfo.login} (ID: ${ userInfo.id})...`);
+  console.log(`Fetching dashboard data for ${ userInfo.user[0].login} (ID: ${ userInfo.user[0].id})...`);
   try {
-    const xpData = await graphQLService.getUserXP();
+    const [xpData, completedExercises, skillsData] = await Promise.all([
+      graphQLService.getUserXP(),
+      graphQLService.getCompletedExercises(userInfo.user[0].id),
+      graphQLService.getUserSkills(),
+    ]);
 
     const totalXPValue = xpData.transaction.filter(t => t.type === "xp").reduce((sum, t) => sum + t.amount, 0);
     totalXPCard.updateStat(totalXPValue.toLocaleString() + " XP");
+
+    const completedCount = completedExercises.pendingProgress.length;
+    completedExercisesCard.updateStat(completedCount.toString());
+    
+    const grades = userInfo.progress.map(p => p.grade).filter(g => g !== null);
+    const averageGrade = grades.length > 0 ? ((grades.reduce((sum, grade) => sum + grade, 0) / grades.length) *100).toFixed(1) + "%" : "N/A";
+    averageGradeCard.updateStat(averageGrade);
   } catch (error){
     console.error("Error fetching or populating dashboard data:", error);
-    alert("Failed to load dashboard data. Please check your network or try again.");
+    // alert("Failed to load dashboard data. Please check your network or try again.");
   }
 }
