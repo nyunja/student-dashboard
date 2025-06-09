@@ -76,12 +76,12 @@ function renderLoginForm() {
 
       try {
         const userInfoData = await graphqlService.getUserInfo();
-        const user = userInfoData.user[0];
+        const user = userInfoData;
 
-        showDashboard(user.login, user.id, user.attrs);
+        showDashboard(user);
       } catch (error) {
         console.error("Error fetching user info after login: ", error);
-        alert("Login successful but failed to fetch user data. Please try again.");
+        // alert("Login successful but failed to fetch user data. Please try again.");
         authService.logout();
       }
     });
@@ -97,8 +97,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (authService.isAuthenticated()) {
     const userInfo = await graphqlService.getUserInfo();
     if (userInfo) {
-      console.log("Authenticated user data:", userInfo.user[0].login);
-      showDashboard(userInfo.user[0]);
+      console.log("Authenticated user data:", userInfo);
+      showDashboard(userInfo);
     } else {
       console.error(
         "Graphql failed to fetch use data on authenticated load: ",
