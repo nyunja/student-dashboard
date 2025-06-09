@@ -1,11 +1,13 @@
-import { logout } from "./auth.js";
+import AuthService from "./auth.js";
 import StatsCard from "./components/StatsCard.js"
 import { themeManager } from "./components/ThemeManager.js";
 import { GraphQLService } from "./services/graphqlService.js";
 
 export const mainApp = document.querySelector(".main-app-container");
 
-const GraphQL = new GraphQLService();
+const graphQLService = new GraphQLService();
+const authService = new AuthService();
+
 
 let totalXPCard;
 let completedExercisesCard;
@@ -104,7 +106,7 @@ export function renderDashboardLayout() {
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      logout();
+      authService.logout();
       renderLoginForm();
     });
   }
@@ -135,7 +137,7 @@ export async function showDashboard(userInfo) {
 async function fetchAndPoplulateDashboard(userInfo) {
   console.log(`Fetching dashboard data for ${ userInfo.login} (ID: ${ userInfo.id})...`);
   try {
-    const xpData = await GraphQL.getUserXP();
+    const xpData = await graphQLService.getUserXP();
 
     const totalXPValue = xpData.transaction.filter(t => t.type === "xp").reduce((sum, t) => sum + t.amount, 0);
     totalXPCard.updateStat(totalXPValue.toLocaleString() + " XP");
