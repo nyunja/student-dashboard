@@ -15,7 +15,7 @@ export class GraphQLService {
                 },
                 body: JSON.stringify({
                     query: queryStr,
-                    data: variables
+                    variables,
                 })
             });
 
