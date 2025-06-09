@@ -1,5 +1,4 @@
 import AuthService from "./auth.js";
-import { graphqlRequest } from "./graphql.js";
 import { showDashboard } from "./dashboard.js";
 import { themeManager } from "./components/ThemeManager.js";
 import { GraphQLService } from "./services/graphqlService.js";
