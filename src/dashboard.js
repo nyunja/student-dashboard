@@ -1,4 +1,4 @@
-import AuthService from "./auth.js";
+import AuthService from "./services/authService.js";
 import StatsCard from "./components/StatsCard.js"
 import { themeManager } from "./components/ThemeManager.js";
 import { GraphQLService } from "./services/graphqlService.js";
@@ -7,7 +7,6 @@ export const mainApp = document.querySelector(".main-app-container");
 
 const graphQLService = new GraphQLService();
 const authService = new AuthService();
-
 
 let totalXPCard;
 let completedExercisesCard;
@@ -148,7 +147,7 @@ async function fetchAndPoplulateDashboard(userInfo) {
 
     const completedCount = completedExercises.pendingProgress.length;
     completedExercisesCard.updateStat(completedCount.toString());
-    
+
     const grades = userInfo.progress.map(p => p.grade).filter(g => g !== null);
     const averageGrade = grades.length > 0 ? ((grades.reduce((sum, grade) => sum + grade, 0) / grades.length) *100).toFixed(1) + "%" : "N/A";
     averageGradeCard.updateStat(averageGrade);
