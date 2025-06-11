@@ -11,8 +11,9 @@ class StatsCard {
     // Render HTML structure of the stat card so it can be appended to the DOM
     render() {
         let iconColor = 'green';
-        if (this.elementId === 'completed-exercises-display') iconColor = 'blue';
-        if (this.elementId === 'average-grade-display') iconColor = 'purple';
+        let icon = ICONS.XP_LOGO;
+        if (this.elementId === 'completed-exercises-display') {iconColor = 'blue'; icon = ICONS.COMPLETED_ICON};
+        if (this.elementId === 'average-grade-display') {iconColor = 'purple'; icon = ICONS.AVERAGE_ICON};
         this.domElement = document.createElement('div');
         this.domElement.className = 'stats-card';
         this.domElement.innerHTML = `
@@ -20,7 +21,7 @@ class StatsCard {
                 <div class="stats-label">${this.title}</div>
                 <div class="stats-value" id="${this.elementId}">${this.value}</div>
             </div>
-            <div class="stats-icon ${iconColor}">${ICONS.XP_LOGO}</div>
+            <div class="stats-icon ${iconColor}">${icon}</div>
         `;
         return this.domElement;
     }
