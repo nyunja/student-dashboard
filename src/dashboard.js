@@ -90,6 +90,18 @@ export function renderDashboardLayout(onLogout) {
             </div>
           </header>
           <div class="stats-row" id="stats-row-container"></div>
+          <div class="chart-section">
+            <div class="section-header">
+              <h2>XP Chart</h2>
+              <div class="chart-filters">
+                  <button class="active">Weekly</button>
+                  <button>Monthly</button>
+              </div>
+              <div class="chart-container">
+                <svg id="xp-chart" width="100%" height="300"></svg>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
       <!-- Theme Toggle Button -->
@@ -152,8 +164,139 @@ async function fetchAndPoplulateDashboard(userInfo) {
     const grades = userInfo.progress.map(p => p.grade).filter(g => g !== null);
     const averageGrade = grades.length > 0 ? ((grades.reduce((sum, grade) => sum + grade, 0) / grades.length) *100).toFixed(1) + "%" : "N/A";
     averageGradeCard.updateStat(averageGrade);
+
+    // Create XP chart
+    createXPChart(xpData.transaction.filter(t => t.type === "xp"));
   } catch (error){
     console.error("Error fetching or populating dashboard data:", error);
     // alert("Failed to load dashboard data. Please check your network or try again.");
   }
+}
+
+function createXPChart(transaction, chartElementId = "xp-chart") {
+  const xpByDay = {};
+  transaction.forEach((t) => {
+    const date = new Date(t.createdAt).toLocaleDateString();
+    xpByDay[date] = (xpByDay[date] || 0) + t.amount;
+  });
+  const dates = Object.keys(xpByDay).sort((a, b) => new Date(a) - new Date(b)).slice(-7);
+  const values = dates.map((date) => xpByDay[date]);
+  const maxValue = Math.max(...values, 1000);
+
+  const xpChart = document.getElementById(chartElementId);
+  if (!xpChart) return;
+
+  const width = xpChart.clientWidth;
+  const height = 300;
+  const padding = { top: 20, right: 20, bottom: 40, left: 50};
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  xpChart.innerHTML = "";
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", width);
+  svg.setAttribute("width", height);
+  xpChart.appendChild(svg);
+
+  const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  chartGroup.setAttribute("transform", `translate(${padding.left}, ${padding.top})`);
+  svg.appendChild(chartGroup);
+
+  const scaleX = chartWidth / (dates.length -1 || 1);
+  const scaleY = chartHeight/ maxValue;
+
+  // Create grid lines
+  for (let i = 0; i <= 5; i++) {
+    const y = chartHeight - (i * chartHeight) / 5;
+    const gridLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    gridLine.setAttribute("x1", 0);
+    gridLine.setAttribute("y1", y);
+    gridLine.setAttribute("x2", chartWidth);
+    gridLine.setAttribute("y2", y);
+    gridLine.setAttribute("stroke", "var(--border-color)");
+    gridLine.setAttribute("stroke-width", "1");
+    gridLine.setAttribute("stroke-dasharray", "5,5");
+    chartGroup.appendChild(gridLine);
+
+    // Add y-axis labels
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", -10);
+    label.setAttribute("y", y + 5);
+    label.setAttribute("text-anchor", "end");
+    label.setAttribute("fill", "var(--text-light)");
+    label.setAttribute("font-size", "12");
+    label.textContent = Math.round((i * maxValue) / 5);
+    chartGroup.appendChild(label);
+  }
+
+  // Create x-axis labels
+  dates.forEach((date, i) => {
+    const x = i * scaleX;
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x);
+    label.setAttribute("y", chartHeight + 20);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("fill", "var(--text-light)");
+    label.setAttribute("font-size", "12");
+
+    // Format date to show only day and month
+    const formattedDate = new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    label.textContent = formattedDate;
+    chartGroup.appendChild(label);
+  });
+
+    // Create bar chart
+  values.forEach((value, i) => {
+    const x = i * scaleX;
+    const barHeight = value * scaleY;
+    const y = chartHeight - barHeight
+
+    // Create bar
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+    bar.setAttribute("x", x - 15)
+    bar.setAttribute("y", y)
+    bar.setAttribute("width", 30)
+    bar.setAttribute("height", barHeight)
+    bar.setAttribute("fill", "var(--chart-color-1)")
+    bar.setAttribute("rx", "4")
+    chartGroup.appendChild(bar)
+
+    // Create value label
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text")
+    label.setAttribute("x", x)
+    label.setAttribute("y", y - 10)
+    label.setAttribute("text-anchor", "middle")
+    label.setAttribute("fill", "var(--text-color)")
+    label.setAttribute("font-size", "12")
+    label.textContent = value
+    chartGroup.appendChild(label)
+  });
+
+  // Create bar chart
+  values.forEach((value, i) => {
+    const x = i * scaleX;
+    const barHeight = value * scaleY;
+    const y = chartHeight - barHeight;
+
+    // Create bar
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bar.setAttribute("x", x - 15);
+    bar.setAttribute("y", y);
+    bar.setAttribute("width", 30);
+    bar.setAttribute("height", barHeight);
+    bar.setAttribute("fill", "var(--chart-color-1)");
+    bar.setAttribute("rx", "4");
+    chartGroup.appendChild(bar);
+
+    // Create value label
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x);
+    label.setAttribute("y", y - 10);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("fill", "var(--text-color)");
+    label.setAttribute("font-size", "12");
+    label.textContent = value;
+    chartGroup.appendChild(label);
+  });
 }
