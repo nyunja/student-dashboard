@@ -428,3 +428,46 @@ header {
 .purple {
   background-color: #9c27b0;
 }
+
+
+/* XP Chart Section */
+.chart-section {
+  background-color: var(--card-background);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.chart-filters button {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: all 0.3s;
+}
+
+.chart-filters button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.chart-container {
+  height: 300px;
+  width: 100%;
+}
