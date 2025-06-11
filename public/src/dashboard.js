@@ -89,13 +89,15 @@ export function renderDashboardLayout(onLogout) {
               </div>
             </div>
           </header>
-          <div class="stats-row" id="stats-row-container"></div>
-          <div class="chart-section">
-            <div class="section-header">
-              <h2>XP Chart</h2>
-              <div class="chart-filters">
-                  <button class="active">Weekly</button>
-                  <button>Monthly</button>
+          <div class="dashboard-content">
+            <div class="stats-row" id="stats-row-container"></div>
+            <div class="chart-section">
+              <div class="section-header">
+                <h2>XP Chart</h2>
+                <div class="chart-filters">
+                    <button class="active">Weekly</button>
+                    <button>Monthly</button>
+                </div>
               </div>
               <div class="chart-container">
                 <svg id="xp-chart" width="100%" height="300"></svg>
@@ -196,7 +198,7 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", width);
-  svg.setAttribute("width", height);
+  svg.setAttribute("height", height);
   xpChart.appendChild(svg);
 
   const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -271,32 +273,5 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
     label.setAttribute("font-size", "12")
     label.textContent = value
     chartGroup.appendChild(label)
-  });
-
-  // Create bar chart
-  values.forEach((value, i) => {
-    const x = i * scaleX;
-    const barHeight = value * scaleY;
-    const y = chartHeight - barHeight;
-
-    // Create bar
-    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    bar.setAttribute("x", x - 15);
-    bar.setAttribute("y", y);
-    bar.setAttribute("width", 30);
-    bar.setAttribute("height", barHeight);
-    bar.setAttribute("fill", "var(--chart-color-1)");
-    bar.setAttribute("rx", "4");
-    chartGroup.appendChild(bar);
-
-    // Create value label
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("x", x);
-    label.setAttribute("y", y - 10);
-    label.setAttribute("text-anchor", "middle");
-    label.setAttribute("fill", "var(--text-color)");
-    label.setAttribute("font-size", "12");
-    label.textContent = value;
-    chartGroup.appendChild(label);
   });
 }
