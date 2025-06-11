@@ -12,7 +12,7 @@ let totalXPCard;
 let completedExercisesCard;
 let averageGradeCard;
 
-export function renderDashboardLayout() {
+export function renderDashboardLayout(onLogout) {
   mainApp.innerHTML = `
       <main class="dashboard-container">
         <section class="sidebar">
@@ -56,7 +56,7 @@ export function renderDashboardLayout() {
                 </svg>
                 Progress
             </a>
-            <a href="#" id="logoutBtn">
+            <a href="/" id="logoutBtn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="17 16 22 12 17 8"></polyline>
@@ -106,7 +106,8 @@ export function renderDashboardLayout() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       authService.logout();
-      renderLoginForm();
+      onLogout();
+      // renderLoginForm();
     });
   }
 
@@ -125,9 +126,9 @@ export function renderDashboardLayout() {
   themeManager.setupThemeToggle();
 }
 
-export async function showDashboard(userInfo) {
+export async function showDashboard(userInfo, onLogout) {
   console.log("Showing dashboard for user:", userInfo.user[0].login);
-  renderDashboardLayout();
+  renderDashboardLayout(onLogout);
 
   document.getElementById("user-name").textContent = userInfo.user[0].login;
   await fetchAndPoplulateDashboard(userInfo);

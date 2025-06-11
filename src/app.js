@@ -1,16 +1,18 @@
-import AuthService from "./auth.js";
+import AuthService from "./services/authService.js";
 import { showDashboard } from "./dashboard.js";
 import { themeManager } from "./components/ThemeManager.js";
 import { GraphQLService } from "./services/graphqlService.js";
+import { Router } from "./services/router.js";
 
 const mainApp = document.querySelector(".main-app-container");
 
 const graphqlService = new GraphQLService();
 const authService = new AuthService();
+const router = new Router();
 
 function renderLoginForm() {
   mainApp.innerHTML = `
-        <main class="auth-container">
+    <main class="auth-container">
         <!-- Left side - Login Form -->
         <section class="login-container">
             <div class="login-form">
@@ -77,38 +79,59 @@ function renderLoginForm() {
       try {
         const userInfoData = await graphqlService.getUserInfo();
         const user = userInfoData;
-
-        showDashboard(user);
+        router.navigate("/dashboard", user);
+        // showDashboard(user);
       } catch (error) {
         console.error("Error fetching user info after login: ", error);
         // alert("Login successful but failed to fetch user data. Please try again.");
         authService.logout();
+        router.navigate("/");
       }
     });
   }
-
   themeManager.setupThemeToggle();
 }
 
+function handleLogout() {
+  authService.logout();
+  router.navigate("/");
+}
+
+router.addRoute("/", renderLoginForm);
+router.addRoute("/dashboard", (userInfo) => showDashboard(userInfo, handleLogout));
+
+router.setNotFoundHandler(() => {
+  mainApp.innerHTML = `
+  <div style="text-align: center; padding: 50px;">
+      <h1>404 - Page Not Found</h1>
+      <p>The page you are looking for does not exist.</p>
+      <p><a href="/" onclick="event.preventDefault(); router.navigate('/login');">Go to Login</a></p>
+  </div>
+  `;
+})
+
 document.addEventListener("DOMContentLoaded", async () => {
-  const authContainer = document.querySelector(".auth-container");
-  const dashboard = document.querySelector(".dashboard-container");
+  
+  // const authContainer = document.querySelector(".auth-container");
+  // const dashboard = document.querySelector(".dashboard-container");
 
   if (authService.isAuthenticated()) {
     const userInfo = await graphqlService.getUserInfo();
     if (userInfo) {
       console.log("Authenticated user data:", userInfo);
-      showDashboard(userInfo);
+      router.navigate("/dashboard", userInfo);
+      // showDashboard(userInfo);
     } else {
       console.error(
         "Graphql failed to fetch use data on authenticated load: ",
         error
       );
       authService.logout();
-      renderLoginForm();
+      router.navigate("/");
+      // renderLoginForm();
     }
   } else {
     console.log("User is not authenticated");
-    renderLoginForm();
+    router.navigate("/");
   }
 });
