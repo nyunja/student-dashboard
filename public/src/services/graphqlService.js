@@ -90,7 +90,7 @@ export class GraphQLService {
             user {
                 id
                 skills: transactions(
-                    where: { type: { _like: "skills_%" } }
+                    where: { type: { _like: "skill_%" } }
                     order_by: { amount: desc }
                 ) {
                     type amount

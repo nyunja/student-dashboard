@@ -103,6 +103,39 @@ export function renderDashboardLayout(onLogout) {
                 <svg id="xp-chart" width="100%" height="300"></svg>
               </div>
             </div>
+            <div class="grid-section">
+              <div class="grid-card">
+                <h3>Recent Projects</h3>
+                <div class="table-container">
+                  <table id="recent-projects">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                        <th>Grade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr colspan="3">Loading</tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="grid-card">
+                <h3>Skills Progress</h3>
+                <div class="skills-progress">
+                  <div class="skill-item">
+                    <div class="skill-info">
+                      <span>Loading...</span>
+                      <span>0%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress" stye="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -166,6 +199,46 @@ async function fetchAndPoplulateDashboard(userInfo) {
     const grades = userInfo.progress.map(p => p.grade).filter(g => g !== null);
     const averageGrade = grades.length > 0 ? ((grades.reduce((sum, grade) => sum + grade, 0) / grades.length) *100).toFixed(1) + "%" : "N/A";
     averageGradeCard.updateStat(averageGrade);
+
+    // Populate skills progress
+    const skillsProgressContainer = document.querySelector(".skills-progress");
+    skillsProgressContainer.innerHTML = '';
+
+    if (skillsData && skillsData.user && skillsData.user[0] && skillsData.user[0].skills) {
+      const skills = skillsData.user[0].skills;
+      const aggregatedSkills = new Map();
+      skills.forEach((skill) => {
+        const skillName = skill.type.replace("skill_", "").replace(/_/g, " ").toUpperCase();
+        const skillAmount = skill.amount;
+        if (!aggregatedSkills.has(skillName) || skillAmount > aggregatedSkills.get(skillName).amount) {
+          aggregatedSkills.set(skillName, {name: skillName, amount: skillAmount});
+        }
+      });
+
+      const sortedSkills = Array.from(aggregatedSkills.values()).sort((a, b) => a.amount > b.amount);
+
+      if (sortedSkills.length > 0) {
+        sortedSkills.forEach((skill) => {
+          const progressPercentage = Math.floor(skill.amount);
+          const skillItemHTML = 
+          `
+          <div class="skill-item">
+            <div class="skill-info">
+              <span>${skill.name}</span>
+              <span>${progressPercentage}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: ${progressPercentage}%"></div>
+            </div>
+          </div>`;
+          skillsProgressContainer.insertAdjacentHTML('beforeend', skillItemHTML);
+        });
+      } else {
+        skillsProgressContainer.innerHTML = '<div class="skill-item">No skills data available.</div>';
+      }
+    } else {
+      skillsHTML = `<div class="skill-item">No skills data available.</div>`;
+    }
 
     // Create XP chart
     createXPChart(xpData.transaction.filter(t => t.type === "xp"));
