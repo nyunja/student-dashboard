@@ -116,7 +116,7 @@ export function renderDashboardLayout(onLogout) {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr colspan="3">Loading</tr>
+                      <tr colspan="3">Loading...</tr>
                     </tbody>
                   </table>
                 </div>
@@ -200,6 +200,35 @@ async function fetchAndPoplulateDashboard(userInfo) {
     const averageGrade = grades.length > 0 ? ((grades.reduce((sum, grade) => sum + grade, 0) / grades.length) *100).toFixed(1) + "%" : "N/A";
     averageGradeCard.updateStat(averageGrade);
 
+    // --- Populate Recent Projects Table ---
+    const recentExercisesTable = document.getElementById("recent-projects");
+    const recentItems = completedExercises.pendingProgress
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10); // Take last 5 completed exercises
+
+    let tableHTML = "";
+    if (recentItems.length > 0) {
+      recentItems.forEach((item) => {
+        const date = new Date(item.createdAt).toLocaleDateString();
+        // The grade for completion is assumed here. If grade comes from user.results or other query, adjust.
+        // For 'pendingProgress', it implies it's completed and 'isDone: true'.
+        // Assuming a successful completion (grade 1) for these. If not, you need actual grades.
+        const status = "Passed"; // Or fetch actual grade if available in pendingProgress
+        const statusClass = "text-success"; // Default to success for completed
+
+        tableHTML += `
+          <tr>
+            <td>Exercise ${item.path.split('/').pop()}</td> <td>${item.path}</td>
+            <td class="${statusClass}">${status}</td>
+          </tr>
+        `;
+      });
+    } else {
+      tableHTML = `<tr><td colspan="3">No recent completed exercises.</td></tr>`;
+    }
+    recentExercisesTable.querySelector("tbody").innerHTML = tableHTML;
+
+
     // Populate skills progress
     const skillsProgressContainer = document.querySelector(".skills-progress");
     skillsProgressContainer.innerHTML = '';
@@ -215,7 +244,7 @@ async function fetchAndPoplulateDashboard(userInfo) {
         }
       });
 
-      const sortedSkills = Array.from(aggregatedSkills.values()).sort((a, b) => a.amount > b.amount);
+      const sortedSkills = Array.from(aggregatedSkills.values()).sort((a, b) => a.amount > b.amount).slice(0, 10);
 
       if (sortedSkills.length > 0) {
         sortedSkills.forEach((skill) => {
