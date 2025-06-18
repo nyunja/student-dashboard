@@ -1,5 +1,5 @@
 import AuthService from "./services/authService.js";
-import { displayDashboard } from "./dashboard/index.js";
+import { displayDashboard, showProfile } from "./dashboard/index.js";
 import { themeManager } from "./components/ThemeManager.js";
 import { GraphQLService } from "./services/graphqlService.js";
 import { Router } from "./services/router.js";
@@ -98,7 +98,8 @@ function handleLogout() {
 }
 
 router.addRoute("/login", renderLoginForm);
-router.addRoute("/dashboard", (userInfo) => displayDashboard(userInfo, handleLogout));
+router.addRoute("/dashboard", (userInfo) => displayDashboard(userInfo, handleLogout, router));
+router.addRoute("/profile", (userInfo) => showProfile(userInfo, handleLogout, router));
 
 router.setNotFoundHandler(() => {
   mainApp.innerHTML = `
@@ -111,16 +112,11 @@ router.setNotFoundHandler(() => {
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
-  
-  // const authContainer = document.querySelector(".auth-container");
-  // const dashboard = document.querySelector(".dashboard-container");
-
   if (authService.isAuthenticated()) {
     const userInfo = await graphqlService.getUserInfo();
     if (userInfo) {
       console.log("Authenticated user data:", userInfo);
       router.navigate("/dashboard", userInfo, handleLogout);
-      // showDashboard(userInfo);
     } else {
       console.error(
         "Graphql failed to fetch use data on authenticated load: ",
@@ -128,7 +124,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       authService.logout();
       router.navigate("/login");
-      // renderLoginForm();
     }
   } else {
     console.log("User is not authenticated");

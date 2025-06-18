@@ -3,10 +3,10 @@ import { themeManager } from "../components/ThemeManager.js";
 import { GraphQLService } from "../services/graphqlService.js";
 import { fetchAndPoplulateDashboardData } from "./dashboardDataHandler.js";
 import { renderDashboardLayout } from "./dashboardView.js";
+import { renderProfileLayout } from "./profileView.js";
+import { setupSidebarEventListeners } from "../components/Sidebar.js";
 
 export const mainApp = document.querySelector(".main-app-container");
-
-const graphQLService = new GraphQLService();
 
 let totalXPCard;
 let completedExercisesCard;
@@ -17,8 +17,8 @@ let averageGradeCard;
  * @param {object} userInfo - The user's information object.
  * @param {function} onLogout - The logout handler from app.js.
  */
-export async function displayDashboard(userInfo, onLogout) {
-  mainApp.innerHTML = renderDashboardLayout();
+export async function displayDashboard(userInfo, onLogout, router) {
+  mainApp.innerHTML = renderDashboardLayout(userInfo);
   // Create and instance of a stats card with stats
   const statsContainer = document.getElementById("stats-row-container");
   if (statsContainer) {
@@ -39,16 +39,18 @@ export async function displayDashboard(userInfo, onLogout) {
     statsContainer.appendChild(averageGradeCard.render());
   }
 
-  // Attach logout event listener
-  const logoutButton = mainApp.querySelector(".logout-button");
-  if (logoutButton && typeof onLogout === "function") {
-    logoutButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      onLogout();
+  // Update user name and attach click listener for profile
+  const userNameDisplay = document.getElementById("user-name");
+  if (userNameDisplay) {
+    userNameDisplay.textContent = userInfo.user[0].login;
+    userNameDisplay.style.cursor = "pointer"; // Indicate it's clickable
+    userNameDisplay.addEventListener("click", () => {
+      router.navigate("/profile", userInfo);
     });
   }
 
-  // Set up theme toggle
+  setupSidebarEventListeners(userInfo, onLogout, router);
+
   themeManager.setupThemeToggle();
 
   // Fetch and populate dashboard data
@@ -58,4 +60,18 @@ export async function displayDashboard(userInfo, onLogout) {
     completedExercisesCard,
     averageGradeCard
   );
+}
+
+/**
+ * Displays the user profile page.
+ * @param {object} userInfo - The user's information object.
+ * @param {function} onLogout - The logout handler from app.js.
+ */
+export function showProfile(userInfo, onLogout, router) {
+  console.log("Showing profile for user:", userInfo.login);
+  mainApp.innerHTML = renderProfileLayout(userInfo);
+
+  setupSidebarEventListeners(userInfo, onLogout, router);
+
+  themeManager.setupThemeToggle();
 }
