@@ -1,10 +1,10 @@
 import StatsCard from "../components/StatsCard.js";
 import { themeManager } from "../components/ThemeManager.js";
-import { GraphQLService } from "../services/graphqlService.js";
 import { fetchAndPoplulateDashboardData } from "./dashboardDataHandler.js";
 import { renderDashboardLayout } from "./dashboardView.js";
 import { renderProfileLayout } from "./profileView.js";
 import { setupSidebarEventListeners } from "../components/Sidebar.js";
+import { setupHeaderEventListener } from "../components/Navbar.js";
 
 export const mainApp = document.querySelector(".main-app-container");
 
@@ -39,15 +39,17 @@ export async function displayDashboard(userInfo, onLogout, router) {
     statsContainer.appendChild(averageGradeCard.render());
   }
 
+  setupHeaderEventListener(userInfo, router);
+
   // Update user name and attach click listener for profile
-  const userNameDisplay = document.getElementById("user-name");
-  if (userNameDisplay) {
-    userNameDisplay.textContent = userInfo.user[0].login;
-    userNameDisplay.style.cursor = "pointer"; // Indicate it's clickable
-    userNameDisplay.addEventListener("click", () => {
-      router.navigate("/profile", userInfo);
-    });
-  }
+  // const userNameDisplay = document.getElementById("user-name");
+  // if (userNameDisplay) {
+  //   userNameDisplay.textContent = userInfo.user[0].login;
+  //   userNameDisplay.style.cursor = "pointer"; // Indicate it's clickable
+  //   userNameDisplay.addEventListener("click", () => {
+  //     router.navigate("/profile", userInfo);
+  //   });
+  // }
 
   setupSidebarEventListeners(userInfo, onLogout, router);
 
@@ -70,6 +72,8 @@ export async function displayDashboard(userInfo, onLogout, router) {
 export function showProfile(userInfo, onLogout, router) {
   console.log("Showing profile for user:", userInfo.login);
   mainApp.innerHTML = renderProfileLayout(userInfo);
+
+  setupHeaderEventListener(userInfo, router);
 
   setupSidebarEventListeners(userInfo, onLogout, router);
 
