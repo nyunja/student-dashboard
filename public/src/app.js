@@ -106,27 +106,50 @@ router.setNotFoundHandler(() => {
   <div style="text-align: center; padding: 50px;">
       <h1>404 - Page Not Found</h1>
       <p>The page you are looking for does not exist.</p>
-      <p><a href="/" onclick="event.preventDefault(); router.navigate('/login');">Go to Login</a></p>
+      <p><a href="/" id="go-to-login">Go to Login</a></p>
   </div>
   `;
+  document.addEventListener('click', (event) => {
+    event.preventDefault();
+    router.navigate("/login");
+  })
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
+
   if (authService.isAuthenticated()) {
-    const userInfo = await graphqlService.getUserInfo();
-    if (userInfo) {
-      console.log("Authenticated user data:", userInfo);
-      router.navigate("/dashboard", userInfo, handleLogout);
-    } else {
-      console.error(
-        "Graphql failed to fetch use data on authenticated load: ",
-        error
-      );
-      authService.logout();
-      router.navigate("/login");
+    try {
+      const userInfo = await graphqlService.getUserInfo();
+      if (userInfo) {
+        console.log("Authenticated user data:", userInfo);
+        if (!router.routes.has(window.location.pathname) && window.location.pathname !== "/" && window.location.pathname !== "/login") {
+          router.notFoundHandler();
+        } else {
+          const currentPath = window.location.pathname;
+          if (currentPath === "/" || currentPath === "/login") {
+            router.navigate("/dashboard", userInfo, handleLogout);
+          } else {
+            router.navigate(currentPath, userInfo, handleLogout);
+          }
+        }
+      } else {
+        console.error(
+          "Graphql failed to fetch use data on authenticated load: ",
+          error
+        );
+        authService.logout();
+        router.navigate("/login");
+      }
+      
+    } catch (error) {
+      
     }
   } else {
     console.log("User is not authenticated");
-    router.navigate("/login");
+    if (window.location.pathname !== '/login') {
+      router.navigate("/login");
+    } else {
+      router.handleRoute('/login');
+    }
   }
 });

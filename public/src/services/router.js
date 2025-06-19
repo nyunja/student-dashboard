@@ -74,6 +74,11 @@ export class Router {
      * This is typically called ocne DOMContentLoaded
      */
     start() {
-        this.handleRoute(window.location.pathname);
+        const currentPath = window.location.pathname;
+        if (!this.routes.has(currentPath) && currentPath !== "/" && currentPath !== "/login") {
+            this.notFoundHandler();
+        } else {
+            this.handleRoute(currentPath);
+        }
     }
 }
