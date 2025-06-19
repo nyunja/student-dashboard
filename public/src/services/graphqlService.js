@@ -78,7 +78,7 @@ export class GraphQLService {
             pendingProgress: progress(
                 where: { isDone: { _eq: true }, eventId: { _eq: $eventId }, userId: { _eq: $userId }, id: { _neq: 145124 } }
             ) {
-                createdAt path
+                createdAt path grade
             }
         }`;
         return this.query(query, { userId, eventId });
