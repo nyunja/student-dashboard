@@ -39,21 +39,20 @@ export async function fetchAndPoplulateDashboardData(
     const recentExercisesTable = document.getElementById("recent-projects");
     const recentItems = completedExercises.pendingProgress
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 10); // Take last 5 completed exercises
+      .slice(0, 10);
 
     let tableHTML = "";
     if (recentItems.length > 0) {
       recentItems.forEach((item) => {
         const date = new Date(item.createdAt).toLocaleDateString();
-        // The grade for completion is assumed here. If grade comes from user.results or other query, adjust.
-        // For 'pendingProgress', it implies it's completed and 'isDone: true'.
-        // Assuming a successful completion (grade 1) for these. If not, you need actual grades.
         const status = "Passed"; // Or fetch actual grade if available in pendingProgress
         const statusClass = "text-success"; // Default to success for completed
 
         tableHTML += `
           <tr>
-            <td>Exercise ${item.path.split('/').pop()}</td> <td>${item.path}</td>
+            <td>${item.path.split('/').pop().split('-').map((part) => {
+              return part[0].toUpperCase() + part.slice(1);
+            }).join(' ')}</td> <td>${item.path}</td>
             <td class="${statusClass}">${status}</td>
           </tr>
         `;
@@ -61,6 +60,7 @@ export async function fetchAndPoplulateDashboardData(
     } else {
       tableHTML = `<tr><td colspan="3">No recent completed exercises.</td></tr>`;
     }
+    console.log("<<<<<<<<<<<<<<<<<<<<<<", recentExercisesTable.querySelector("tbody").innerHTML);
     recentExercisesTable.querySelector("tbody").innerHTML = tableHTML;
 
 
