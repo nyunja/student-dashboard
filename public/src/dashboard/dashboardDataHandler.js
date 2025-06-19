@@ -15,6 +15,8 @@ export async function fetchAndPoplulateDashboardData(
       graphQLService.getUserSkills(),
     ]);
 
+    console.log("<<<<<<<<<<<<<<<<<< progress", userInfo.progress);
+
     const totalXPValue = xpData.transaction
       .filter((t) => t.type === "xp")
       .reduce((sum, t) => sum + t.amount, 0);
@@ -37,9 +39,12 @@ export async function fetchAndPoplulateDashboardData(
 
     // --- Populate Recent Projects Table ---
     const recentExercisesTable = document.getElementById("recent-projects");
-    const recentItems = completedExercises.pendingProgress
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 10);
+    const recentItems = completedExercises.pendingProgress;
+    const passed = recentItems.filter((item) => item.grade >= 1).length;
+    const failed = recentItems.length - passed;
+    const passRatio = recentItems.length > 0 ? (passed / recentItems.length) * 100 : 0;
+
+    createPassFailDonutChart(passRatio, 'recent-projects', passed, failed);
 
     let tableHTML = "";
     if (recentItems.length > 0) {
@@ -60,8 +65,7 @@ export async function fetchAndPoplulateDashboardData(
     } else {
       tableHTML = `<tr><td colspan="3">No recent completed exercises.</td></tr>`;
     }
-    console.log("<<<<<<<<<<<<<<<<<<<<<<", recentExercisesTable.querySelector("tbody").innerHTML);
-    recentExercisesTable.querySelector("tbody").innerHTML = tableHTML;
+    // recentExercisesTable.querySelector("tbody").innerHTML = tableHTML;
 
 
     // Populate skills progress
@@ -111,14 +115,106 @@ export async function fetchAndPoplulateDashboardData(
   }
 }
 
+function createPassFailDonutChart(passRatio, elementId, passed, failed) {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const chartContainer = document.createElement('div');
+  chartContainer.className = 'donut-chart-container';
+  
+  // Create SVG for donut chart
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", "600");
+  svg.setAttribute("height", "600");
+  svg.setAttribute("viewBox", "0 0 100 100");
+
+    // Calculate circle properties
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const passStrokeDasharray = (passRatio / 100) * circumference;
+  const failStrokeDasharray = circumference - passStrokeDasharray;
+
+  // Create background circle (fail portion)
+  const failCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  failCircle.setAttribute("cx", "50");
+  failCircle.setAttribute("cy", "50");
+  failCircle.setAttribute("r", radius);
+  failCircle.setAttribute("fill", "none");
+  failCircle.setAttribute("stroke", "var(--secondary-color)");
+  failCircle.setAttribute("stroke-width", "18");
+
+  // Create foreground circle (pass portion)
+  const passCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  passCircle.setAttribute("cx", "50");
+  passCircle.setAttribute("cy", "50");
+  passCircle.setAttribute("r", radius);
+  passCircle.setAttribute("fill", "none");
+  passCircle.setAttribute("stroke", "var(--primary-color)");
+  passCircle.setAttribute("stroke-width", "18");
+  passCircle.setAttribute("stroke-dasharray", `${passStrokeDasharray} ${failStrokeDasharray}`);
+  passCircle.setAttribute("transform", "rotate(-90 50 50)");
+
+  // Add text in the center
+  const percentText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  percentText.setAttribute("x", "50");
+  percentText.setAttribute("y", "45");
+  percentText.setAttribute("text-anchor", "middle");
+  percentText.setAttribute("dominant-baseline", "middle");
+  percentText.setAttribute("font-size", "15");
+  percentText.setAttribute("font-weight", "bold");
+  percentText.setAttribute("fill", "var(--text-color)");
+  percentText.textContent = `${Math.round(passRatio)}%`;
+  
+  // Add label text
+  const labelText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  labelText.setAttribute("x", "50");
+  labelText.setAttribute("y", "60");
+  labelText.setAttribute("text-anchor", "middle");
+  labelText.setAttribute("font-size", "8");
+  labelText.setAttribute("fill", "var(--text-light)");
+  labelText.textContent = "Pass Rate";
+
+  // Append elements to SVG
+  svg.appendChild(failCircle);
+  svg.appendChild(passCircle);
+  svg.appendChild(percentText);
+  svg.appendChild(labelText);
+
+  const legend = document.createElement('div');
+  legend.className = `
+    <div class="legend-item">
+      <span class="legend-color" style="background-color: var(--primary-color)"></span>
+      <span>Pass (${passed})</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color" style="background-color: var(--secondary-color)"></span>
+      <span>Fail (${failed})</span>
+    </div>
+  `;
+
+  // Append SVG and legend to container
+  chartContainer.appendChild(svg);
+  chartContainer.appendChild(legend);
+  container.appendChild(chartContainer);
+}
+
 function createXPChart(transaction, chartElementId = "xp-chart") {
   const xpByDay = {};
   transaction.forEach((t) => {
-    const date = new Date(t.createdAt).toLocaleDateString();
-    xpByDay[date] = (xpByDay[date] || 0) + t.amount;
+    const date = new Date(t.createdAt);
+    const isoDate = date.toISOString().split('T')[0];
+    xpByDay[isoDate] = (xpByDay[isoDate] || 0) + t.amount;
   });
-  const dates = Object.keys(xpByDay).sort((a, b) => new Date(a) - new Date(b)).slice(-7);
-  const values = dates.map((date) => xpByDay[date]);
+  const dates = Object.keys(xpByDay).sort();
+
+  let cumulativeXp = 0;
+  const values = dates.map(date => {
+    cumulativeXp += xpByDay[date];
+    return cumulativeXp;
+  });
+  // const values = dates.map((date) => xpByDay[date]);
   const maxValue = Math.max(...values, 1000);
 
   const xpChart = document.getElementById(chartElementId);
@@ -199,15 +295,41 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
     bar.setAttribute("fill", "var(--chart-color-1)")
     bar.setAttribute("rx", "4")
     chartGroup.appendChild(bar)
-
-    // Create value label
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text")
-    label.setAttribute("x", x)
-    label.setAttribute("y", y - 10)
-    label.setAttribute("text-anchor", "middle")
-    label.setAttribute("fill", "var(--text-color)")
-    label.setAttribute("font-size", "12")
-    label.textContent = value
-    chartGroup.appendChild(label)
   });
+
+  // Create line chart overlay
+  let pathData = ""
+  values.forEach((value, i) => {
+    const x = i * scaleX;
+    const y = chartHeight - value * scaleY;
+
+    if (i === 0) {
+      pathData += `M ${x} ${y}`
+    } else {
+      pathData += ` L ${x} ${y}`
+    }
+  })
+
+  // Create path element
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  path.setAttribute("d", pathData)
+  path.setAttribute("stroke", "var(--chart-color-2)")
+  path.setAttribute("stroke-width", "3")
+  path.setAttribute("fill", "none")
+  chartGroup.appendChild(path)
+
+  // Add dots at each data point
+  values.forEach((value, i) => {
+    const x = i * scaleX;
+    const y = chartHeight - value * scaleY;
+
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle")
+    dot.setAttribute("cx", x)
+    dot.setAttribute("cy", y)
+    dot.setAttribute("r", "5")
+    dot.setAttribute("fill", "var(--chart-color-2)")
+    dot.setAttribute("stroke", "white")
+    dot.setAttribute("stroke-width", "2")
+    chartGroup.appendChild(dot)
+  })
 }
