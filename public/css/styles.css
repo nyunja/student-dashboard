@@ -663,3 +663,14 @@ header {
   color: var(--text-color);
   font-weight: 500;
 }
+
+/* Error message styles */
+.error-message {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: var(--danger-color);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid var(--danger-color);
+}

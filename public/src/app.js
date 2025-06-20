@@ -29,6 +29,7 @@ function renderLoginForm() {
                     </div>
                     <h1 class="logo-text">Log In To GraphQL Progress Tracker</h1>
                 </div>
+                <div id="login-error" class="error-message hidden"></div>
                 <form>
                     <div class="input-group">
                         <label for="identifier">Username or Email</label>
@@ -61,6 +62,7 @@ function renderLoginForm() {
     </button>
   `;
   const loginForm = document.querySelector("form");
+  const loginError = document.getElementById("login-error");
 
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -69,10 +71,26 @@ function renderLoginForm() {
       const identifier = document.getElementById("identifier").value;
       const password = document.getElementById("password").value;
 
+      // Clear any previous error messages
+      loginError.textContent = "";
+      loginError.classList.add("hidden");
+      
+      // Show loading state on button
+      const submitButton = loginForm.querySelector("button[type='submit']");
+      const originalButtonText = submitButton.textContent;
+      submitButton.textContent = "Logging in...";
+      submitButton.disabled = true;
+
       const result = await authService.login(identifier, password);
 
+      // Reset button state
+      submitButton.textContent = originalButtonText;
+      submitButton.disabled = false;
+
       if (result.error) {
-        alert(result.error);
+        // Display error message
+        loginError.textContent = result.error;
+        loginError.classList.remove("hidden");
         return;
       }
 
@@ -80,12 +98,11 @@ function renderLoginForm() {
         const userInfoData = await graphqlService.getUserInfo();
         const user = userInfoData;
         router.navigate("/dashboard", user, handleLogout);
-        // showDashboard(user);
       } catch (error) {
         console.error("Error fetching user info after login: ", error);
-        // alert("Login successful but failed to fetch user data. Please try again.");
+        loginError.textContent = "Login successful but failed to fetch user data. Please try again.";
+        loginError.classList.remove("hidden");
         authService.logout();
-        router.navigate("/login");
       }
     });
   }

@@ -46,9 +46,22 @@ export default class AuthService {
       });
 
       if (!res.ok) {
-        const errorMsg = await res.text();
-        console.error("Login failed (server error):", errorMsg);
-        return { error: errorMsg || "Invalid credentials." };
+        const errorResponse = await res.text();
+        console.error("Login failed (server error):", errorResponse);
+        
+        // Try to parse the error as JSON and extract the message
+        let errorMessage = "Invalid credentials.";
+        try {
+          const errorJson = JSON.parse(errorResponse);
+          if (errorJson.error) {
+            errorMessage = errorJson.error;
+          }
+        } catch (parseError) {
+          // If parsing fails, use the raw response as the error message
+          errorMessage = errorResponse;
+        }
+        
+        return { error: errorMessage };
       }
 
       const responseBody = await res.text();
