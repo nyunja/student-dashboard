@@ -264,22 +264,6 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
     chartGroup.appendChild(label);
   }
 
-  // Create x-axis labels
-  dates.forEach((date, i) => {
-    const x = i * scaleX;
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("x", x);
-    label.setAttribute("y", chartHeight + 20);
-    label.setAttribute("text-anchor", "middle");
-    label.setAttribute("fill", "var(--text-light)");
-    label.setAttribute("font-size", "12");
-
-    // Format date to show only day and month
-    const formattedDate = new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    label.textContent = formattedDate;
-    chartGroup.appendChild(label);
-  });
-
     // Create bar chart
   values.forEach((value, i) => {
     const x = i * scaleX;
