@@ -55,7 +55,6 @@ The JavaScript codebase is highly modularized for clarity and maintainability:
 │       │   ├── dashboardView.js
 │       │   ├── index.js
 │       │   └── profileView.js
-│       ├── routerConfig.js
 │       └── services
 │           ├── authService.js
 │           ├── graphqlService.js
