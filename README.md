@@ -33,26 +33,35 @@ The JavaScript codebase is highly modularized for clarity and maintainability:
 
 ```
 .
-├── index.html            # Main HTML file
-├── styles.css            # Global CSS styles
-├── login-illustration.svg# Login page illustration
-└── js/                   # All JavaScript modules
-    ├── auth.js           # Handles core authentication (login, logout, token management)
-    ├── main.js           # Main application entry point (replaces old app.js)
-    ├── authModule.js     # Encapsulates login form rendering and submission, logout logic.
-    ├── routerConfig.js   # Centralizes all application route definitions.
-    ├── components/
-    │   ├── StatsCard.js    # Reusable component for displaying statistics.
-    │   ├── Sidebar.js      # Reusable sidebar component with navigation & theme toggle.
-    │   └── ThemeManager.js # Manages theme switching logic.
-    ├── dashboard/
-    │   ├── dashboardDataHandler.js # Fetches and processes dashboard-specific data.
-    │   ├── dashboardView.js      # Renders the main dashboard layout.
-    │   ├── index.js              # Orchestrates dashboard functionalities (main dashboard module).
-    │   └── profileView.js        # Renders the user profile layout.
-    └── services/
-        ├── graphqlService.js   # Handles all GraphQL queries.
-        └── router.js           # Core client-side routing class.
+├── go.mod
+├── LICENSE
+├── main.go
+├── public
+│   ├── assets
+│   │   └── avatar_placeholder.png
+│   ├── css
+│   │   └── styles.css
+│   ├── index.html
+│   └── src
+│       ├── app.js
+│       ├── components
+│       │   ├── Navbar.js
+│       │   ├── Sidebar.js
+│       │   ├── StatsCard.js
+│       │   └── ThemeManager.js
+│       ├── constants.js
+│       ├── dashboard
+│       │   ├── dashboardDataHandler.js
+│       │   ├── dashboardView.js
+│       │   ├── index.js
+│       │   └── profileView.js
+│       ├── routerConfig.js
+│       └── services
+│           ├── authService.js
+│           ├── graphqlService.js
+│           └── router.js
+└── README.md
+
 ```
 
 ## 🚀 Setup and Installation
