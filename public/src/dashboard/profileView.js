@@ -2,7 +2,10 @@ import { renderSidebar } from "../components/Sidebar.js";
 import { renderNavbar } from "../components/Navbar.js";
 
 export function renderProfileLayout(userInfo) {
-  const attrs = userInfo.user[0].attrs || {};
+  const username = userInfo.user[0].login;
+  const attrs = userInfo.user && userInfo.user[0] ? userInfo.user[0].attrs || {}: {};
+  const email = userInfo.user && userInfo.user[0] ? userInfo.user[0].email || 'N/A' : 'N/A';
+  const auditRatio = userInfo.user[0].auditRatio !== undefined ? (userInfo.user[0].auditRatio * 100).toFixed(2) + '%' : 'N/A';
 
   const html = `
     <main class="profile-container dashboard-container">
@@ -12,21 +15,59 @@ export function renderProfileLayout(userInfo) {
         ${renderNavbar()}
 
         <div class="dashboard-grid">
-            <div class="grid-card full-width">
-                <h3>Personal Information</h3>
-                <div class="profile-details-grid">
-                    <div class="detail-item"><strong>Login:</strong> <span>${userInfo.user[0].login || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Email:</strong> <span>${userInfo.user[0].email || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>First Name:</strong> <span>${attrs.firstName || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Last Name:</strong> <span>${attrs.lastName || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Middle Name:</strong> <span>${attrs.middleName || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Gender:</strong> <span>${attrs.gender || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Phone:</strong> <span>${attrs.phone || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Country:</strong> <span>${attrs.country || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>ID Number:</strong> <span>${attrs["ID.NUMBER"] || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Audit Ratio:</strong> <span>${userInfo.auditRatio !== undefined ? (userInfo.auditRatio * 100).toFixed(2) + '%' : 'N/A'}</span></div>
+          <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img src="./assets/avatar_placeholder.png" alt="${username}'s avatar">
+                    </div>
+                    <div class="profile-title">
+                        <h2>${username}</h2>
+                        <p>${email}</p>
+                    </div>
                 </div>
-            </div>
+                <div class="profile-body">
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">${auditRatio}</span>
+                            <span class="stat-label">Audit Ratio</span>
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <h3>Personal Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">First Name</span>
+                                <span class="info-value">${attrs.firstName || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Name</span>
+                                <span class="info-value">${attrs.lastName || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Middle Name</span>
+                                <span class="info-value">${attrs.middleName || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Gender</span>
+                                <span class="info-value">${attrs.gender || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">${attrs.phone || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Country</span>
+                                <span class="info-value">${attrs.country || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">ID Number</span>
+                                <span class="info-value">${attrs["ID.NUMBER"] || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+          </div>
+            
         </div>
       </section>
     </main>
