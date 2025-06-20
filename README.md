@@ -76,6 +76,10 @@ To get this project up and running on your local machine:
     ```bash
     go run main.go
     ```
+3. **Access the hosted site on render**
+    ```
+    https://student-dashboard-mj9p.onrender.com/login
+    ```
 
 ## 💡 Usage
 
