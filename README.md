@@ -78,7 +78,7 @@ To get this project up and running on your local machine:
     ```
 3. **Access the hosted site on render**
     ```
-    https://student-dashboard-mj9p.onrender.com/login
+    https://student-dashboard-yjuq.onrender.com/login
     ```
 
 ## 💡 Usage
