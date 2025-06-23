@@ -22,7 +22,12 @@ func main() {
 		http.ServeFile(w, r, filepath.Join(publicDir, "index.html"))
 	})
 
-	port := ":8080"
-	fmt.Printf("Go server listening on http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, nil))
+	// Get port from environment variable for cloud platforms like Render
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default port if not specified
+	}
+
+	fmt.Printf("Go server listening on port %s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
