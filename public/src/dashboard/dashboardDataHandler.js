@@ -1,5 +1,13 @@
 import { GraphQLService } from "../services/graphqlService.js";
 
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 const graphQLService = new GraphQLService();
 
 export async function fetchAndPoplulateDashboardData(
@@ -42,9 +50,10 @@ export async function fetchAndPoplulateDashboardData(
     const recentItems = completedExercises.pendingProgress;
     const passed = recentItems.filter((item) => item.grade >= 1).length;
     const failed = recentItems.length - passed;
-    const passRatio = recentItems.length > 0 ? (passed / recentItems.length) * 100 : 0;
+    const passRatio =
+      recentItems.length > 0 ? (passed / recentItems.length) * 100 : 0;
 
-    createPassFailDonutChart(passRatio, 'recent-projects', passed, failed);
+    createPassFailDonutChart(passRatio, "recent-projects", passed, failed);
 
     let tableHTML = "";
     if (recentItems.length > 0) {
@@ -55,9 +64,14 @@ export async function fetchAndPoplulateDashboardData(
 
         tableHTML += `
           <tr>
-            <td>${item.path.split('/').pop().split('-').map((part) => {
-              return part[0].toUpperCase() + part.slice(1);
-            }).join(' ')}</td> <td>${item.path}</td>
+            <td>${item.path
+              .split("/")
+              .pop()
+              .split("-")
+              .map((part) => {
+                return part[0].toUpperCase() + part.slice(1);
+              })
+              .join(" ")}</td> <td>${item.path}</td>
             <td class="${statusClass}">${status}</td>
           </tr>
         `;
@@ -67,29 +81,43 @@ export async function fetchAndPoplulateDashboardData(
     }
     // recentExercisesTable.querySelector("tbody").innerHTML = tableHTML;
 
-
     // Populate skills progress
     const skillsProgressContainer = document.querySelector(".skills-progress");
-    skillsProgressContainer.innerHTML = '';
+    skillsProgressContainer.innerHTML = "";
 
-    if (skillsData && skillsData.user && skillsData.user[0] && skillsData.user[0].skills) {
+    if (
+      skillsData &&
+      skillsData.user &&
+      skillsData.user[0] &&
+      skillsData.user[0].skills
+    ) {
       const skills = skillsData.user[0].skills;
       const aggregatedSkills = new Map();
       skills.forEach((skill) => {
-        const skillName = skill.type.replace("skill_", "").replace(/_/g, " ").toUpperCase();
+        const skillName = skill.type
+          .replace("skill_", "")
+          .replace(/_/g, " ")
+          .toUpperCase();
         const skillAmount = skill.amount;
-        if (!aggregatedSkills.has(skillName) || skillAmount > aggregatedSkills.get(skillName).amount) {
-          aggregatedSkills.set(skillName, {name: skillName, amount: skillAmount});
+        if (
+          !aggregatedSkills.has(skillName) ||
+          skillAmount > aggregatedSkills.get(skillName).amount
+        ) {
+          aggregatedSkills.set(skillName, {
+            name: skillName,
+            amount: skillAmount,
+          });
         }
       });
 
-      const sortedSkills = Array.from(aggregatedSkills.values()).sort((a, b) => a.amount > b.amount).slice(0, 10);
+      const sortedSkills = Array.from(aggregatedSkills.values())
+        .sort((a, b) => a.amount > b.amount)
+        .slice(0, 10);
 
       if (sortedSkills.length > 0) {
         sortedSkills.forEach((skill) => {
           const progressPercentage = Math.floor(skill.amount);
-          const skillItemHTML = 
-          `
+          const skillItemHTML = `
           <div class="skill-item">
             <div class="skill-info">
               <span>${skill.name}</span>
@@ -99,17 +127,23 @@ export async function fetchAndPoplulateDashboardData(
               <div class="progress" style="width: ${progressPercentage}%"></div>
             </div>
           </div>`;
-          skillsProgressContainer.insertAdjacentHTML('beforeend', skillItemHTML);
+          skillsProgressContainer.insertAdjacentHTML(
+            "beforeend",
+            skillItemHTML
+          );
         });
       } else {
-        skillsProgressContainer.innerHTML = '<div class="skill-item">No skills data available.</div>';
+        skillsProgressContainer.innerHTML =
+          '<div class="skill-item">No skills data available.</div>';
       }
     } else {
       skillsHTML = `<div class="skill-item">No skills data available.</div>`;
     }
 
     // Create XP chart
-    createXPChart(xpData.transaction.filter(t => t.type === "xp"));
+    const xpTransactions = xpData.transaction.filter((t) => t.type === "xp");
+    createXPChart(xpTransactions);
+    setupResponsiveChart(xpTransactions);
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
   }
@@ -119,25 +153,28 @@ function createPassFailDonutChart(passRatio, elementId, passed, failed) {
   const container = document.getElementById(elementId);
   if (!container) return;
 
-  container.innerHTML = '';
+  container.innerHTML = "";
 
-  const chartContainer = document.createElement('div');
-  chartContainer.className = 'donut-chart-container';
-  
+  const chartContainer = document.createElement("div");
+  chartContainer.className = "donut-chart-container";
+
   // Create SVG for donut chart
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", "600");
   svg.setAttribute("height", "600");
   svg.setAttribute("viewBox", "0 0 100 100");
 
-    // Calculate circle properties
+  // Calculate circle properties
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const passStrokeDasharray = (passRatio / 100) * circumference;
   const failStrokeDasharray = circumference - passStrokeDasharray;
 
   // Create background circle (fail portion)
-  const failCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  const failCircle = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle"
+  );
   failCircle.setAttribute("cx", "50");
   failCircle.setAttribute("cy", "50");
   failCircle.setAttribute("r", radius);
@@ -146,18 +183,27 @@ function createPassFailDonutChart(passRatio, elementId, passed, failed) {
   failCircle.setAttribute("stroke-width", "18");
 
   // Create foreground circle (pass portion)
-  const passCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  const passCircle = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle"
+  );
   passCircle.setAttribute("cx", "50");
   passCircle.setAttribute("cy", "50");
   passCircle.setAttribute("r", radius);
   passCircle.setAttribute("fill", "none");
   passCircle.setAttribute("stroke", "var(--primary-color)");
   passCircle.setAttribute("stroke-width", "18");
-  passCircle.setAttribute("stroke-dasharray", `${passStrokeDasharray} ${failStrokeDasharray}`);
+  passCircle.setAttribute(
+    "stroke-dasharray",
+    `${passStrokeDasharray} ${failStrokeDasharray}`
+  );
   passCircle.setAttribute("transform", "rotate(-90 50 50)");
 
   // Add text in the center
-  const percentText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  const percentText = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text"
+  );
   percentText.setAttribute("x", "50");
   percentText.setAttribute("y", "45");
   percentText.setAttribute("text-anchor", "middle");
@@ -166,9 +212,12 @@ function createPassFailDonutChart(passRatio, elementId, passed, failed) {
   percentText.setAttribute("font-weight", "bold");
   percentText.setAttribute("fill", "var(--text-color)");
   percentText.textContent = `${Math.round(passRatio)}%`;
-  
+
   // Add label text
-  const labelText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  const labelText = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text"
+  );
   labelText.setAttribute("x", "50");
   labelText.setAttribute("y", "60");
   labelText.setAttribute("text-anchor", "middle");
@@ -182,7 +231,7 @@ function createPassFailDonutChart(passRatio, elementId, passed, failed) {
   svg.appendChild(percentText);
   svg.appendChild(labelText);
 
-  const legend = document.createElement('div');
+  const legend = document.createElement("div");
   legend.className = `
     <div class="legend-item">
       <span class="legend-color" style="background-color: var(--primary-color)"></span>
@@ -204,13 +253,13 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
   const xpByDay = {};
   transaction.forEach((t) => {
     const date = new Date(t.createdAt);
-    const isoDate = date.toISOString().split('T')[0];
+    const isoDate = date.toISOString().split("T")[0];
     xpByDay[isoDate] = (xpByDay[isoDate] || 0) + t.amount;
   });
   const dates = Object.keys(xpByDay).sort();
 
   let cumulativeXp = 0;
-  const values = dates.map(date => {
+  const values = dates.map((date) => {
     cumulativeXp += xpByDay[date];
     return cumulativeXp;
   });
@@ -222,7 +271,7 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
 
   const width = xpChart.clientWidth;
   const height = 300;
-  const padding = { top: 20, right: 20, bottom: 40, left: 50};
+  const padding = { top: 20, right: 20, bottom: 40, left: 50 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
@@ -231,19 +280,30 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", width);
   svg.setAttribute("height", height);
+  svg.setAttribute("viewBox", `0 0 ${width}, ${height}`);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   xpChart.appendChild(svg);
 
-  const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  chartGroup.setAttribute("transform", `translate(${padding.left}, ${padding.top})`);
+  const chartGroup = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "g"
+  );
+  chartGroup.setAttribute(
+    "transform",
+    `translate(${padding.left}, ${padding.top})`
+  );
   svg.appendChild(chartGroup);
 
-  const scaleX = chartWidth / (dates.length -1 || 1);
-  const scaleY = chartHeight/ maxValue;
+  const scaleX = chartWidth / (dates.length - 1 || 1);
+  const scaleY = chartHeight / maxValue;
 
   // Create grid lines
   for (let i = 0; i <= 5; i++) {
     const y = chartHeight - (i * chartHeight) / 5;
-    const gridLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    const gridLine = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line"
+    );
     gridLine.setAttribute("x1", 0);
     gridLine.setAttribute("y1", y);
     gridLine.setAttribute("x2", chartWidth);
@@ -254,7 +314,10 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
     chartGroup.appendChild(gridLine);
 
     // Add y-axis labels
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    const label = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text"
+    );
     label.setAttribute("x", -10);
     label.setAttribute("y", y + 5);
     label.setAttribute("text-anchor", "end");
@@ -264,56 +327,70 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
     chartGroup.appendChild(label);
   }
 
-    // Create bar chart
+  // Create bar chart
   values.forEach((value, i) => {
     const x = i * scaleX;
     const barHeight = value * scaleY;
-    const y = chartHeight - barHeight
+    const y = chartHeight - barHeight;
 
     // Create bar
-    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-    bar.setAttribute("x", x - 15)
-    bar.setAttribute("y", y)
-    bar.setAttribute("width", 30)
-    bar.setAttribute("height", barHeight)
-    bar.setAttribute("fill", "var(--chart-color-1)")
-    bar.setAttribute("rx", "4")
-    chartGroup.appendChild(bar)
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bar.setAttribute("x", x - 15);
+    bar.setAttribute("y", y);
+    bar.setAttribute("width", 30);
+    bar.setAttribute("height", barHeight);
+    bar.setAttribute("fill", "var(--chart-color-1)");
+    bar.setAttribute("rx", "4");
+    chartGroup.appendChild(bar);
   });
 
   // Create line chart overlay
-  let pathData = ""
+  let pathData = "";
   values.forEach((value, i) => {
     const x = i * scaleX;
     const y = chartHeight - value * scaleY;
 
     if (i === 0) {
-      pathData += `M ${x} ${y}`
+      pathData += `M ${x} ${y}`;
     } else {
-      pathData += ` L ${x} ${y}`
+      pathData += ` L ${x} ${y}`;
     }
-  })
+  });
 
   // Create path element
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
-  path.setAttribute("d", pathData)
-  path.setAttribute("stroke", "var(--chart-color-2)")
-  path.setAttribute("stroke-width", "3")
-  path.setAttribute("fill", "none")
-  chartGroup.appendChild(path)
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", pathData);
+  path.setAttribute("stroke", "var(--chart-color-2)");
+  path.setAttribute("stroke-width", "3");
+  path.setAttribute("fill", "none");
+  chartGroup.appendChild(path);
 
   // Add dots at each data point
   values.forEach((value, i) => {
     const x = i * scaleX;
     const y = chartHeight - value * scaleY;
 
-    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle")
-    dot.setAttribute("cx", x)
-    dot.setAttribute("cy", y)
-    dot.setAttribute("r", "5")
-    dot.setAttribute("fill", "var(--chart-color-2)")
-    dot.setAttribute("stroke", "white")
-    dot.setAttribute("stroke-width", "2")
-    chartGroup.appendChild(dot)
-  })
+    const dot = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", "5");
+    dot.setAttribute("fill", "var(--chart-color-2)");
+    dot.setAttribute("stroke", "white");
+    dot.setAttribute("stroke-width", "2");
+    chartGroup.appendChild(dot);
+  });
+}
+
+function setupResponsiveChart(transaction) {
+  const handleResize = debounce(() => {
+    createXPChart(transaction);
+  }, 250);
+  
+  window.addEventListener('resize', handleResize);
+  
+  // Return a cleanup function to remove the event listener when needed
+  return () => window.removeEventListener('resize', handleResize);
 }
