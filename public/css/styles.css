@@ -674,3 +674,61 @@ header {
   font-size: 14px;
   border-left: 4px solid var(--danger-color);
 }
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px 5px;
+    z-index: 100;
+    border-top: 1px solid var(--border-color);
+    overflow-y: visible;
+  }
+
+  .sidebar .dash-logo {
+    display: none; /* Hide logo on mobile */
+  }
+
+  .sidebar-title {
+    display: none; /* Hide title on mobile */
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .sidebar nav a {
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 0.75rem;
+  }
+
+  .sidebar nav a .icon {
+    margin: 0 auto;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding-bottom: 70px; /* Add space for the bottom nav */
+  }
+
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  /* Adjust theme toggle position for mobile */
+  .theme-toggle {
+    bottom: 80px; /* Position above the mobile nav */
+  }
+}
