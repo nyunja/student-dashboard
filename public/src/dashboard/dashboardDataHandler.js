@@ -297,6 +297,9 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
   const scaleX = chartWidth / (dates.length - 1 || 1);
   const scaleY = chartHeight / maxValue;
 
+  const barPadding = 0.6; // Adjust this value (0 to 1) to control bar width and spacing
+  const barWidth = scaleX * (1 - barPadding);
+
   // Create grid lines
   for (let i = 0; i <= 5; i++) {
     const y = chartHeight - (i * chartHeight) / 5;
@@ -304,8 +307,7 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
       "http://www.w3.org/2000/svg",
       "line"
     );
-    gridLine.setAttribute("x1", 0);
-    gridLine.setAttribute("y1", y);
+    gridLine.setAttribute("x1", 0); // Start from the left edge of the chart area
     gridLine.setAttribute("x2", chartWidth);
     gridLine.setAttribute("y2", y);
     gridLine.setAttribute("stroke", "var(--border-color)");
@@ -329,15 +331,16 @@ function createXPChart(transaction, chartElementId = "xp-chart") {
 
   // Create bar chart
   values.forEach((value, i) => {
-    const x = i * scaleX;
+    const x = i * scaleX; // This is the center point for the bar
+    const barX = x - barWidth / 2; // Calculate the left edge of the bar
     const barHeight = value * scaleY;
     const y = chartHeight - barHeight;
 
     // Create bar
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    bar.setAttribute("x", x - 15);
+    bar.setAttribute("x", barX);
     bar.setAttribute("y", y);
-    bar.setAttribute("width", 30);
+    bar.setAttribute("width", barWidth);
     bar.setAttribute("height", barHeight);
     bar.setAttribute("fill", "var(--chart-color-1)");
     bar.setAttribute("rx", "4");
